@@ -1,4 +1,6 @@
 const BookInstance = require("../models/bookinstance");
+const Book = require("../models/book");
+const async = require("async");
 
 // Display list of all BookInstances.
 exports.bookinstance_list = function (req, res, next) {
@@ -16,13 +18,47 @@ exports.bookinstance_list = function (req, res, next) {
     });
 };
 // Display detail page for a specific BookInstance.
-exports.bookinstance_detail = (req, res) => {
-  res.send(`NOT IMPLEMENTED: BookInstance detail: ${req.params.id}`);
+exports.bookinstance_detail = (req, res, next) => {
+  async.parallel(
+    {
+      bookinstance(callback) {
+        BookInstance.findById(req.params.id).exec(callback);
+      },
+    },
+    (err, results) => {
+      if (err) {
+        // Error in API usage.
+        return next(err);
+      }
+      if (results.bookinstance == null) {
+        // No results.
+        const err = new Error("Bookinstance not found");
+        err.status = 404;
+        return next(err);
+      }
+      //console.log(results);
+      // Successful, so render.
+      res.render("bookinstance_detail", {
+        title: "Book Instance Detail",
+        bookinstance: results.bookinstance,
+
+      });
+    }
+  );
 };
 
 // Display BookInstance create form on GET.
-exports.bookinstance_create_get = (req, res) => {
-  res.send("NOT IMPLEMENTED: BookInstance create GET");
+exports.bookinstance_create_get = (req, res, next) => {
+  Book.find({}, "title").exec((err, books) => {
+    if (err) {
+      return next(err);
+    }
+    // Successful, so render.
+    res.render("bookinstance_form", {
+      title: "Create BookInstance",
+      book_list: books,
+    });
+  });
 };
 
 // Handle BookInstance create on POST.

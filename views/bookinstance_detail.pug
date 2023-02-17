@@ -1,0 +1,8 @@
+extends layout
+
+block content
+  h1= title
+
+  p #[strong imprint:] #{bookinstance.imprint}
+  p #[strong Status:] #{bookinstance.status}
+  p #[strong Due_Back:] #{bookinstance.due_back}
