@@ -111,11 +111,111 @@ exports.genre_delete_post = (req, res) => {
 };
 
 // Display Genre update form on GET.
-exports.genre_update_get = (req, res) => {
-  res.send("NOT IMPLEMENTED: Genre update GET");
-};
+exports.genre_update_get = (req,res,next) => {
+  // Process request after validation and sanitization.
+  (req, res, next) => {
+    // Extract the validation errors from a request.
+
+    // Create a Book object with escaped/trimmed data and old id.
+    const genre = new Genre({
+      title: req.body.name,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all authors and genres for form.
+      async.parallel(
+        {
+          genre(callback) {
+            Genre.find(callback);
+          },
+        },
+        (err, results) => {
+          if (err) {
+            return next(err);
+          }
+
+          // Mark our selected genres as checked.
+          for (const genre of results.genres) {
+            if (genre.includes(genre._id)) {
+              genre.checked = "true";
+            }
+          }
+          res.render("author_form", {
+            title: "Update Genre",
+            genre: results.genre,
+            name: results.genre.name
+          });
+        }
+      );
+      return;
+    }
+
+    // Data from form is valid. Update the record.
+    Book.findByIdAndUpdate(req.params.id, genre,(err, thegenre) => {
+      if (err) {
+        return next(err);
+      }
+
+      // Successful: redirect to book detail page.
+      res.redirect(thegenre.url);
+    });
+  },
+}
+
+
 
 // Handle Genre update on POST.
-exports.genre_update_post = (req, res) => {
-  res.send("NOT IMPLEMENTED: Genre update POST");
-};
+exports.genre_update_post = [
+  // Process request after validation and sanitization.
+  (req, res, next) => {
+    // Extract the validation errors from a request.
+
+    // Create a Book object with escaped/trimmed data and old id.
+    const genre = new Genre({
+      title: req.body.name,
+    });
+
+    if (!errors.isEmpty()) {
+      // There are errors. Render form again with sanitized values/error messages.
+
+      // Get all authors and genres for form.
+      async.parallel(
+        {
+          genre(callback) {
+            Genre.find(callback);
+          },
+        },
+        (err, results) => {
+          if (err) {
+            return next(err);
+          }
+
+          // Mark our selected genres as checked.
+          for (const genre of results.genres) {
+            if (genre.includes(genre._id)) {
+              genre.checked = "true";
+            }
+          }
+          res.render("author_form", {
+            title: "Update Genre",
+            genre: results.genre,
+            name: results.genre.name
+          });
+        }
+      );
+      return;
+    }
+
+    // Data from form is valid. Update the record.
+    Book.findByIdAndUpdate(req.params.id, genre,(err, thegenre) => {
+      if (err) {
+        return next(err);
+      }
+
+      // Successful: redirect to book detail page.
+      res.redirect(thegenre.url);
+    });
+  },
+];
